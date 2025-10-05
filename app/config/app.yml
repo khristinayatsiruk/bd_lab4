@@ -1,5 +1,5 @@
 database:
-  host: "localhost"              # Залиште "localhost", якщо сервер MySQL працює локально
-  user: "root"  # Введіть ваше ім'я користувача MySQL
-  password: "bebra4777"         # Введіть ваш пароль для MySQL
-  database: "mydb"               # Назва бази даних, яку ви створили (lab3)
+  host: "lab1bd.mysql.database.azure.com" # хост твого Azure MySQL
+  user: "adminuser@lab1bd" # користувач, якого ти створила для підключення з VM
+  password: "Khristina2803" # пароль цього користувача
+  database: "lab1bd" # назва бази даних
