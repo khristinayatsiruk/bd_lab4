@@ -1,5 +1,5 @@
 database:
-  host: "lab1bd.mysql.database.azure.com" # хост твого Azure MySQL
-  user: "adminuser@lab1bd" # користувач, якого ти створила для підключення з VM
-  password: "Khristina2803" # пароль цього користувача
-  database: "lab1bd" # назва бази даних
+  host: "lab1bd.mysql.database.azure.com"
+  user: "adminuser"
+  password: "Khristina2803"
+  database: "mydb"
