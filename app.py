@@ -5,9 +5,10 @@ from flasgger import Swagger
 from app.my_project.auth.controller.controller import controller
 
 app = Flask(__name__)
-swagger = Swagger(app)  
 
 app.register_blueprint(controller)
+swagger = Swagger(app)  
+
 
 if __name__ == "__main__":
     app.run(debug=True)
