@@ -1,7 +1,10 @@
-# app/my_project/auth/dao/dao.py
 from app import db
-from app.my_project.auth.domain.models import Country, City, WeatherConditionLabel, CityWaterTemperature, DailyWeather, HourlyWeather, WeatherAlert, WeatherForecast, City,UserHasCity ,User, UserHasCity, UserPreferences
+from app.my_project.auth.domain.models import (
+    Country, City, WeatherConditionLabel, DailyWeather, HourlyWeather,
+    WeatherAlert, WeatherForecast, User, UserPreferences, UserHasCity
+)
 
+# ------------------- COUNTRY -------------------
 class CountryDAO:
     @staticmethod
     def get_all():
@@ -12,17 +15,17 @@ class CountryDAO:
         return Country.query.get(id_country)
 
     @staticmethod
-    def create(country_data):
-        new_country = Country(**country_data)
+    def create(data):
+        new_country = Country(**data)
         db.session.add(new_country)
         db.session.commit()
         return new_country
 
     @staticmethod
-    def update(id_country, update_data):
+    def update(id_country, data):
         country = Country.query.get(id_country)
         if country:
-            for key, value in update_data.items():
+            for key, value in data.items():
                 setattr(country, key, value)
             db.session.commit()
         return country
@@ -34,6 +37,7 @@ class CountryDAO:
             db.session.delete(country)
             db.session.commit()
 
+# ------------------- CITY -------------------
 class CityDAO:
     @staticmethod
     def get_all():
@@ -44,17 +48,17 @@ class CityDAO:
         return City.query.get(id_city)
 
     @staticmethod
-    def create(city_data):
-        new_city = City(**city_data)
+    def create(data):
+        new_city = City(**data)
         db.session.add(new_city)
         db.session.commit()
         return new_city
 
     @staticmethod
-    def update(id_city, update_data):
+    def update(id_city, data):
         city = City.query.get(id_city)
         if city:
-            for key, value in update_data.items():
+            for key, value in data.items():
                 setattr(city, key, value)
             db.session.commit()
         return city
@@ -65,10 +69,12 @@ class CityDAO:
         if city:
             db.session.delete(city)
             db.session.commit()
-    @staticmethod
-    def get_cities_by_country(id_country):
-        return City.query.filter_by(country_id_country=id_country).all()
 
+    @staticmethod
+    def get_by_country(country_id):
+        return City.query.filter_by(country_id_country=country_id).all()
+
+# ------------------- WEATHER -------------------
 class WeatherConditionLabelDAO:
     @staticmethod
     def get_all():
@@ -79,12 +85,13 @@ class WeatherConditionLabelDAO:
         return WeatherConditionLabel.query.get(id_label)
 
     @staticmethod
-    def create(label_data):
-        new_label = WeatherConditionLabel(**label_data)
-        db.session.add(new_label)
+    def create(data):
+        label = WeatherConditionLabel(**data)
+        db.session.add(label)
         db.session.commit()
-        return new_label
+        return label
 
+# ------------------- DAILY WEATHER -------------------
 class DailyWeatherDAO:
     @staticmethod
     def get_all():
@@ -95,28 +102,29 @@ class DailyWeatherDAO:
         return DailyWeather.query.get(id_daily_weather)
 
     @staticmethod
-    def create(daily_weather_data):
-        new_daily_weather = DailyWeather(**daily_weather_data)
-        db.session.add(new_daily_weather)
+    def create(data):
+        weather = DailyWeather(**data)
+        db.session.add(weather)
         db.session.commit()
-        return new_daily_weather
+        return weather
 
     @staticmethod
-    def update(id_daily_weather, update_data):
-        daily_weather = DailyWeather.query.get(id_daily_weather)
-        if daily_weather:
-            for key, value in update_data.items():
-                setattr(daily_weather, key, value)
+    def update(id_daily_weather, data):
+        weather = DailyWeather.query.get(id_daily_weather)
+        if weather:
+            for key, value in data.items():
+                setattr(weather, key, value)
             db.session.commit()
-        return daily_weather
+        return weather
 
     @staticmethod
     def delete(id_daily_weather):
-        daily_weather = DailyWeather.query.get(id_daily_weather)
-        if daily_weather:
-            db.session.delete(daily_weather)
+        weather = DailyWeather.query.get(id_daily_weather)
+        if weather:
+            db.session.delete(weather)
             db.session.commit()
 
+# ------------------- HOURLY WEATHER -------------------
 class HourlyWeatherDAO:
     @staticmethod
     def get_all():
@@ -127,28 +135,29 @@ class HourlyWeatherDAO:
         return HourlyWeather.query.get(id_hourly_weather)
 
     @staticmethod
-    def create(hourly_weather_data):
-        new_hourly_weather = HourlyWeather(**hourly_weather_data)
-        db.session.add(new_hourly_weather)
+    def create(data):
+        weather = HourlyWeather(**data)
+        db.session.add(weather)
         db.session.commit()
-        return new_hourly_weather
+        return weather
 
     @staticmethod
-    def update(id_hourly_weather, update_data):
-        hourly_weather = HourlyWeather.query.get(id_hourly_weather)
-        if hourly_weather:
-            for key, value in update_data.items():
-                setattr(hourly_weather, key, value)
+    def update(id_hourly_weather, data):
+        weather = HourlyWeather.query.get(id_hourly_weather)
+        if weather:
+            for key, value in data.items():
+                setattr(weather, key, value)
             db.session.commit()
-        return hourly_weather
+        return weather
 
     @staticmethod
     def delete(id_hourly_weather):
-        hourly_weather = HourlyWeather.query.get(id_hourly_weather)
-        if hourly_weather:
-            db.session.delete(hourly_weather)
+        weather = HourlyWeather.query.get(id_hourly_weather)
+        if weather:
+            db.session.delete(weather)
             db.session.commit()
 
+# ------------------- WEATHER ALERT -------------------
 class WeatherAlertDAO:
     @staticmethod
     def get_all():
@@ -159,11 +168,11 @@ class WeatherAlertDAO:
         return WeatherAlert.query.get(id_alert)
 
     @staticmethod
-    def create(alert_data):
-        new_alert = WeatherAlert(**alert_data)
-        db.session.add(new_alert)
+    def create(data):
+        alert = WeatherAlert(**data)
+        db.session.add(alert)
         db.session.commit()
-        return new_alert
+        return alert
 
     @staticmethod
     def delete(id_alert):
@@ -172,6 +181,7 @@ class WeatherAlertDAO:
             db.session.delete(alert)
             db.session.commit()
 
+# ------------------- WEATHER FORECAST -------------------
 class WeatherForecastDAO:
     @staticmethod
     def get_all():
@@ -182,17 +192,17 @@ class WeatherForecastDAO:
         return WeatherForecast.query.get(id_forecast)
 
     @staticmethod
-    def create(forecast_data):
-        new_forecast = WeatherForecast(**forecast_data)
-        db.session.add(new_forecast)
+    def create(data):
+        forecast = WeatherForecast(**data)
+        db.session.add(forecast)
         db.session.commit()
-        return new_forecast
+        return forecast
 
     @staticmethod
-    def update(id_forecast, update_data):
+    def update(id_forecast, data):
         forecast = WeatherForecast.query.get(id_forecast)
         if forecast:
-            for key, value in update_data.items():
+            for key, value in data.items():
                 setattr(forecast, key, value)
             db.session.commit()
         return forecast
@@ -204,6 +214,7 @@ class WeatherForecastDAO:
             db.session.delete(forecast)
             db.session.commit()
 
+# ------------------- USER -------------------
 class UserDAO:
     @staticmethod
     def get_all():
@@ -214,36 +225,37 @@ class UserDAO:
         return User.query.get(id_user)
 
     @staticmethod
-    def create(user_data):
-        new_user = User(**user_data)
-        db.session.add(new_user)
+    def create(data):
+        user = User(**data)
+        db.session.add(user)
         db.session.commit()
-        return new_user
+        return user
 
     @staticmethod
-    def add_city_to_user(id_user, id_city):
-        user_city_link = UserHasCity(user_id_user=id_user, city_id_city=id_city)
-        db.session.add(user_city_link)
+    def add_city(id_user, id_city):
+        link = UserHasCity(user_id_user=id_user, city_id_city=id_city)
+        db.session.add(link)
         db.session.commit()
         return True
 
     @staticmethod
-    def get_cities_by_user(id_user):
+    def get_cities(id_user):
         user = User.query.get(id_user)
         return user.cities if user else []
 
+# ------------------- USER PREFERENCES -------------------
 class UserPreferencesDAO:
     @staticmethod
     def get_all():
         return UserPreferences.query.all()
 
     @staticmethod
-    def get_by_id(id_user_preferences):
-        return UserPreferences.query.get(id_user_preferences)
+    def get_by_id(id_preferences):
+        return UserPreferences.query.get(id_preferences)
 
     @staticmethod
     def create(data):
-        new_preference = UserPreferences(**data)
-        db.session.add(new_preference)
+        pref = UserPreferences(**data)
+        db.session.add(pref)
         db.session.commit()
-        return new_preference
+        return pref

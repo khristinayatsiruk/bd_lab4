@@ -1,212 +1,266 @@
 from flask import Blueprint, jsonify, request
-from app.my_project.auth.service.service import (
-    CountryService, CityService, WeatherConditionLabelService, 
-    DailyWeatherService, HourlyWeatherService, WeatherAlertService, 
-    WeatherForecastService, UserService, UserPreferencesService
-)
 
 controller = Blueprint('controller', __name__)
 
-from flask import Blueprint
-
-controller = Blueprint('controller', __name__)
-
-@controller.route("/test", methods=["GET"])
-def test():
-    return {"message": "Server is running without DB!"}
+# --------------------
+# Дані для прикладу
+# --------------------
+COUNTRIES = [{"id": 1, "name": "Sweden", "code": "SE"}]
+CITIES = [{"id": 1, "name": "Stockholm", "country_id": 1, "longitude": 18.0686, "latitude": 59.3293}]
 
 # --------------------
-# Маршрути для Country
+# Country CRUD
 # --------------------
-@controller.route('/countries/<int:id_country>/cities', methods=['GET'])
-def get_cities_by_country(id_country):
-    cities = CityService.get_cities_by_country(id_country)
-    if cities:
-        return jsonify([city.to_dict() for city in cities])
-    return jsonify({"error": "No cities found for this country"}), 404
-#1:m
-@controller.route('/countries', methods=['GET'])
+@controller.route("/countries", methods=["GET"])
 def get_countries():
-    countries = CountryService.get_all_countries()
-    return jsonify([{"id": country.id_country, "name": country.name, "code": country.code} for country in countries])
+    """
+    Get all countries
+    ---
+    responses:
+      200:
+        description: List of countries
+        examples:
+          application/json: [{"id": 1, "name": "Sweden", "code": "SE"}]
+    """
+    return jsonify(COUNTRIES)
 
-@controller.route('/countries/<int:id_country>', methods=['GET'])
+@controller.route("/countries/<int:id_country>", methods=["GET"])
 def get_country(id_country):
-    country = CountryService.get_country_by_id(id_country)
+    """
+    Get a country by ID
+    ---
+    parameters:
+      - in: path
+        name: id_country
+        type: integer
+        required: true
+        description: ID of the country
+    responses:
+      200:
+        description: Country found
+      404:
+        description: Country not found
+    """
+    country = next((c for c in COUNTRIES if c["id"] == id_country), None)
     if country:
-        return jsonify({"id": country.id_country, "name": country.name, "code": country.code})
+        return jsonify(country)
     return jsonify({"error": "Country not found"}), 404
 
-@controller.route('/countries', methods=['POST'])
+@controller.route("/countries", methods=["POST"])
 def create_country():
+    """
+    Create a new country
+    ---
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          id: Country
+          required:
+            - name
+            - code
+          properties:
+            name:
+              type: string
+            code:
+              type: string
+    responses:
+      201:
+        description: Country created successfully
+    """
     data = request.json
-    country = CountryService.create_country(data)
-    return jsonify({"id": country.id_country, "name": country.name, "code": country.code}), 201
+    new_id = max(c["id"] for c in COUNTRIES) + 1 if COUNTRIES else 1
+    new_country = {"id": new_id, "name": data["name"], "code": data["code"]}
+    COUNTRIES.append(new_country)
+    return jsonify(new_country), 201
 
-@controller.route('/countries/<int:id_country>', methods=['PUT'])
+@controller.route("/countries/<int:id_country>", methods=["PUT"])
 def update_country(id_country):
+    """
+    Update a country
+    ---
+    parameters:
+      - in: path
+        name: id_country
+        type: integer
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          id: CountryUpdate
+          properties:
+            name:
+              type: string
+            code:
+              type: string
+    responses:
+      200:
+        description: Country updated
+      404:
+        description: Country not found
+    """
     data = request.json
-    country = CountryService.update_country(id_country, data)
+    country = next((c for c in COUNTRIES if c["id"] == id_country), None)
     if country:
-        return jsonify({"id": country.id_country, "name": country.name, "code": country.code})
+        country.update(data)
+        return jsonify(country)
     return jsonify({"error": "Country not found"}), 404
 
-@controller.route('/countries/<int:id_country>', methods=['DELETE'])
+@controller.route("/countries/<int:id_country>", methods=["DELETE"])
 def delete_country(id_country):
-    CountryService.delete_country(id_country)
-    return jsonify({"message": "Country deleted successfully"})
-
+    """
+    Delete a country
+    ---
+    parameters:
+      - in: path
+        name: id_country
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Country deleted
+      404:
+        description: Country not found
+    """
+    global COUNTRIES
+    country = next((c for c in COUNTRIES if c["id"] == id_country), None)
+    if country:
+        COUNTRIES = [c for c in COUNTRIES if c["id"] != id_country]
+        return jsonify({"message": "Country deleted successfully"})
+    return jsonify({"error": "Country not found"}), 404
 
 # --------------------
-# Маршрути для City
+# City CRUD
 # --------------------
-
-@controller.route('/cities', methods=['GET'])
+@controller.route("/cities", methods=["GET"])
 def get_cities():
-    cities = CityService.get_all_cities()
-    return jsonify([{"id": city.id_city, "name": city.name, "longitude": city.longitude, "latitude": city.latitude} for city in cities])
+    """
+    Get all cities
+    ---
+    responses:
+      200:
+        description: List of cities
+    """
+    return jsonify(CITIES)
 
-@controller.route('/cities/<int:id_city>', methods=['GET'])
+@controller.route("/cities/<int:id_city>", methods=["GET"])
 def get_city(id_city):
-    city = CityService.get_city_by_id(id_city)
+    """
+    Get a city by ID
+    ---
+    parameters:
+      - in: path
+        name: id_city
+        type: integer
+        required: true
+    responses:
+      200:
+        description: City found
+      404:
+        description: City not found
+    """
+    city = next((c for c in CITIES if c["id"] == id_city), None)
     if city:
-        return jsonify({"id": city.id_city, "name": city.name, "longitude": city.longitude, "latitude": city.latitude})
+        return jsonify(city)
     return jsonify({"error": "City not found"}), 404
 
-@controller.route('/cities', methods=['POST'])
+@controller.route("/cities", methods=["POST"])
 def create_city():
+    """
+    Create a new city
+    ---
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          id: City
+          required:
+            - name
+            - country_id
+            - longitude
+            - latitude
+          properties:
+            name:
+              type: string
+            country_id:
+              type: integer
+            longitude:
+              type: number
+            latitude:
+              type: number
+    responses:
+      201:
+        description: City created
+    """
     data = request.json
-    city = CityService.create_city(data)
-    return jsonify({"id": city.id_city, "name": city.name, "longitude": city.longitude, "latitude": city.latitude}), 201
+    new_id = max(c["id"] for c in CITIES) + 1 if CITIES else 1
+    new_city = {
+        "id": new_id,
+        "name": data["name"],
+        "country_id": data["country_id"],
+        "longitude": data["longitude"],
+        "latitude": data["latitude"]
+    }
+    CITIES.append(new_city)
+    return jsonify(new_city), 201
 
-@controller.route('/cities/<int:id_city>', methods=['PUT'])
+@controller.route("/cities/<int:id_city>", methods=["PUT"])
 def update_city(id_city):
+    """
+    Update a city
+    ---
+    parameters:
+      - in: path
+        name: id_city
+        type: integer
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          id: CityUpdate
+          properties:
+            name:
+              type: string
+            longitude:
+              type: number
+            latitude:
+              type: number
+    responses:
+      200:
+        description: City updated
+      404:
+        description: City not found
+    """
     data = request.json
-    city = CityService.update_city(id_city, data)
+    city = next((c for c in CITIES if c["id"] == id_city), None)
     if city:
-        return jsonify({"id": city.id_city, "name": city.name, "longitude": city.longitude, "latitude": city.latitude})
+        city.update(data)
+        return jsonify(city)
     return jsonify({"error": "City not found"}), 404
 
-@controller.route('/cities/<int:id_city>', methods=['DELETE'])
+@controller.route("/cities/<int:id_city>", methods=["DELETE"])
 def delete_city(id_city):
-    CityService.delete_city(id_city)
-    return jsonify({"message": "City deleted successfully"})
-
-
-# --------------------
-# Маршрути для WeatherConditionLabel
-# --------------------
-
-@controller.route('/weather_conditions', methods=['GET'])
-def get_weather_conditions():
-    labels = WeatherConditionLabelService.get_all_labels()
-    return jsonify([{"id": label.id_weather_condition_label, "label": label.label} for label in labels])
-
-@controller.route('/weather_conditions', methods=['POST'])
-def create_weather_condition():
-    data = request.json
-    label = WeatherConditionLabelService.create_label(data)
-    return jsonify({"id": label.id_weather_condition_label, "label": label.label}), 201
-
-
-# --------------------
-# Маршрути для DailyWeather
-# --------------------
-
-@controller.route('/daily_weather', methods=['GET'])
-def get_daily_weather():
-    weather_entries = DailyWeatherService.get_all_daily_weather()
-    return jsonify([{"id": entry.id_daily_weather, "date": entry.date, "min_temp": entry.min_temp, "max_temp": entry.max_temp} for entry in weather_entries])
-
-@controller.route('/daily_weather', methods=['POST'])
-def create_daily_weather():
-    data = request.json
-    entry = DailyWeatherService.create_daily_weather(data)
-    return jsonify({"id": entry.id_daily_weather, "date": entry.date, "min_temp": entry.min_temp, "max_temp": entry.max_temp}), 201
-
-
-# --------------------
-# Маршрути для HourlyWeather
-# --------------------
-
-@controller.route('/hourly_weather', methods=['GET'])
-def get_hourly_weather():
-    weather_entries = HourlyWeatherService.get_all_hourly_weather()
-    return jsonify([{"id": entry.id_hourly_weather, "date": entry.date, "hour": entry.hour, "temperature": entry.temperature} for entry in weather_entries])
-
-@controller.route('/hourly_weather', methods=['POST'])
-def create_hourly_weather():
-    data = request.json
-    entry = HourlyWeatherService.create_hourly_weather(data)
-    return jsonify({"id": entry.id_hourly_weather, "date": entry.date, "hour": entry.hour, "temperature": entry.temperature}), 201
-
-
-# --------------------
-# Маршрути для WeatherAlert
-# --------------------
-
-@controller.route('/weather_alerts', methods=['GET'])
-def get_weather_alerts():
-    alerts = WeatherAlertService.get_all_alerts()
-    return jsonify([{"id": alert.id_weather_alert, "alert_type": alert.alert_type, "start_time": alert.start_time} for alert in alerts])
-
-@controller.route('/weather_alerts', methods=['POST'])
-def create_weather_alert():
-    data = request.json
-    alert = WeatherAlertService.create_alert(data)
-    return jsonify({"id": alert.id_weather_alert, "alert_type": alert.alert_type, "start_time": alert.start_time}), 201
-
-
-# --------------------
-# Маршрути для WeatherForecast
-# --------------------
-
-@controller.route('/weather_forecasts', methods=['GET'])
-def get_weather_forecasts():
-    forecasts = WeatherForecastService.get_all_forecasts()
-    return jsonify([{"id": forecast.id_weather_forecast, "forecast_date": forecast.forecast_date} for forecast in forecasts])
-
-@controller.route('/weather_forecasts', methods=['POST'])
-def create_weather_forecast():
-    data = request.json
-    forecast = WeatherForecastService.create_forecast(data)
-    return jsonify({"id": forecast.id_weather_forecast, "forecast_date": forecast.forecast_date}), 201
-
-# --------------------
-# Маршрути для User
-
-# --------------------
-@controller.route('/users', methods=['GET'])
-def get_users():
-    users = UserService.get_all()
-    return jsonify([user.to_dict() for user in users])
-
-@controller.route('/users', methods=['POST'])
-def create_user():
-    data = request.json
-    user = UserService.create(data)
-    return jsonify(user.to_dict()), 201
-
-@controller.route('/user/<int:id_user>/city/<int:id_city>', methods=['POST'])
-def add_city_to_user(id_user, id_city):
-    UserService.add_city_to_user(id_user, id_city)
-    return jsonify({"message": "City added to user successfully"}), 201
-
-@controller.route('/user/<int:id_user>/cities', methods=['GET'])
-def get_cities_by_user(id_user):
-    cities = UserService.get_cities_by_user(id_user)
-    return jsonify([city.to_dict() for city in cities]), 200
-
-# --------------------
-# Маршрути для UserPreferences
-# --------------------
-@controller.route('/user_preferences', methods=['GET'])
-def get_user_preferences():
-    preferences = UserPreferencesService.get_all()
-    return jsonify([preference.to_dict() for preference in preferences])
-
-@controller.route('/user_preferences', methods=['POST'])
-def create_user_preference():
-    data = request.json
-    preference = UserPreferencesService.create(data)
-    return jsonify(preference.to_dict()), 201
+    """
+    Delete a city
+    ---
+    parameters:
+      - in: path
+        name: id_city
+        type: integer
+        required: true
+    responses:
+      200:
+        description: City deleted
+      404:
+        description: City not found
+    """
+    global CITIES
+    city = next((c for c in CITIES if c["id"] == id_city), None)
+    if city:
+        CITIES = [c for c in CITIES if c["id"] != id_city]
+        return jsonify({"message": "City deleted successfully"})
+    return jsonify({"error": "City not found"}), 404

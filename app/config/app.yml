@@ -1,5 +1,22 @@
-database:
-  host: "lab1bd.mysql.database.azure.com"
-  user: "adminuser"
-  password: "Khristina2803"
-  database: "mydb"
+COMMON: &common
+  DEBUG: False
+  SQLALCHEMY_TRACK_MODIFICATIONS: False
+
+development:
+  <<: *common
+  DEBUG: True
+  SECRETS_MANAGER:
+    NAME: "azure-bd-secret"
+    REGION: "europe-north"
+
+production:
+  <<: *common
+  SECRETS_MANAGER:
+    NAME: "azure-db-secret"
+    REGION: "europe-north"
+
+ADDITIONAL_CONFIG:
+  MYSQL_HOST: "74.234.24.16"
+  MYSQL_USER: "azureuser"
+  MYSQL_PASSWORD: "my_password"
+  MYSQL_DB: "weather_db"
