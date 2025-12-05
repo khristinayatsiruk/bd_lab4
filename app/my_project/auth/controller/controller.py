@@ -1,10 +1,7 @@
 from flask import Blueprint, jsonify, request
+import math
+import random
 
-controller = Blueprint('controller', __name__)
-
-# --------------------
-# Дані для прикладу
-# --------------------
 COUNTRIES = [{"id": 1, "name": "Sweden", "code": "SE"}]
 CITIES = [{"id": 1, "name": "Stockholm", "country_id": 1, "longitude": 18.0686, "latitude": 59.3293}]
 
@@ -45,6 +42,17 @@ def get_country(id_country):
     if country:
         return jsonify(country)
     return jsonify({"error": "Country not found"}), 404
+
+@controller.route("/stress", methods=["GET"])
+def stress_cpu():
+    x = 0.0001
+    for i in range(500000):
+        x += math.sqrt(i) * random.random()
+    
+    return jsonify({"message": "CPU Stressed!", "result": x})
+
+controller = Blueprint('controller', __name__)
+
 
 @controller.route("/countries", methods=["POST"])
 def create_country():
