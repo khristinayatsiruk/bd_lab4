@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, request
 import math
 import random
 
+controller = Blueprint('controller', __name__)
+
 COUNTRIES = [{"id": 1, "name": "Sweden", "code": "SE"}]
 CITIES = [{"id": 1, "name": "Stockholm", "country_id": 1, "longitude": 18.0686, "latitude": 59.3293}]
 
@@ -51,7 +53,7 @@ def stress_cpu():
     
     return jsonify({"message": "CPU Stressed!", "result": x})
 
-controller = Blueprint('controller', __name__)
+
 
 
 @controller.route("/countries", methods=["POST"])
